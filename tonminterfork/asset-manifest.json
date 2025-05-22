@@ -1,0 +1,34 @@
+{
+  "files": {
+    "main.css": "/static/css/main.fc5705ca.css",
+    "main.js": "/static/js/main.dc653ff9.js",
+    "static/js/787.d1d4a2c2.chunk.js": "/static/js/787.d1d4a2c2.chunk.js",
+    "static/media/orbs.svg": "/static/media/orbs.0f1186d9548085158bfc9ddc129dd972.svg",
+    "static/media/coin-logo.svg": "/static/media/coin-logo.be193ced0ab3174318408cbda298ed18.svg",
+    "static/media/recent-search.svg": "/static/media/recent-search.a6b8355c0a4b6929c6ac8c75e1eb2917.svg",
+    "static/media/coin-logo-hover.svg": "/static/media/coin-logo-hover.bcb4f579e3f942583b36fc7a21e6da02.svg",
+    "static/media/pen.svg": "/static/media/pen.3404acd4e44d6392d17c007d8bd690ed.svg",
+    "static/media/link-open.svg": "/static/media/link-open.020d15772eeb2a3b7d8325dac8b8ff3e.svg",
+    "index.html": "/index.html",
+    "static/media/github-hover.svg": "/static/media/github-hover.acd369aecd4ebe6e27b40d71a3d66745.svg",
+    "static/media/github.svg": "/static/media/github.b02f639a3bcaa4242e6795fb18643708.svg",
+    "static/media/github-logo.svg": "/static/media/github-logo.6e72cb08bb30325ad500a6e80cae2ba6.svg",
+    "static/media/logo.svg": "/static/media/logo.e2fb8e28c6889a34f4d082ff803bfc39.svg",
+    "static/media/error-notification.svg": "/static/media/error-notification.7524ee060a6f090e4ff634c680621f88.svg",
+    "static/media/copy.svg": "/static/media/copy.4f00c4ea8406c876d91eea345cfa1764.svg",
+    "static/media/telegram-hover.svg": "/static/media/telegram-hover.77cc792e2278a378c6de33152f8950e6.svg",
+    "static/media/telegram.svg": "/static/media/telegram.dd1710a7ba0df53e0dfaeb3850d5fdd6.svg",
+    "static/media/heart.svg": "/static/media/heart.9a734106f0aada91efd41aa0067889e8.svg",
+    "static/media/search.svg": "/static/media/search.7751a28837d3d87d75961623117dc43c.svg",
+    "static/media/right.svg": "/static/media/right.a5a9967ade5803e357829fd887f00899.svg",
+    "static/media/close.svg": "/static/media/close.fd4f52334074b7c94a6d151d92ae564c.svg",
+    "static/media/bullet.svg": "/static/media/bullet.0c7500ce7e96e727958df370b60807d0.svg",
+    "main.fc5705ca.css.map": "/static/css/main.fc5705ca.css.map",
+    "main.dc653ff9.js.map": "/static/js/main.dc653ff9.js.map",
+    "787.d1d4a2c2.chunk.js.map": "/static/js/787.d1d4a2c2.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.fc5705ca.css",
+    "static/js/main.dc653ff9.js"
+  ]
+}

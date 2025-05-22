@@ -1,0 +1,64 @@
+body {
+    font-family: sans-serif;
+    margin: 20px;
+}
+
+.button {
+    padding: 10px 15px;
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 15px; /* Add some space below the button */
+    text-decoration: none; /* If you use an <a> tag instead */
+}
+
+.button:hover {
+    background-color: #e0e0e0;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.app-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.app-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.2s ease-in-out;
+}
+.app-card:hover {
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    background-color: aquamarine;
+}
+.app-card a {
+    text-decoration: none;
+    color: inherit; /* Inherit the body text color */
+    display: block;
+}
+.app-card h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+}
+.app-card p {
+    margin-bottom: 15px;
+    color: #777;
+    line-height: 1.6;
+}
+.app-card a:hover h2 {
+    /* Optional: slightly darken the heading on hover */
+    color: #222;
+}
