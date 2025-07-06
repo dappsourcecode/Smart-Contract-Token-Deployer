@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TON Jetton Minter</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+       .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        div { margin-bottom: 10px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="number"], textarea { width: calc(100% - 12px); padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        #status { margin-top: 20px; padding: 10px; background-color: #f0f0f0; border-radius: 4px; }
+        #ton-connect-button { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TON Jetton Minter DApp</h1>
+
+        <div id="ton-connect-button"></div>
+        <div id="status">
+            <p><strong>Connection Status:</strong> <span id="connectionStatus">Disconnected</span></p>
+            <p><strong>Connected Wallet:</strong> <span id="walletAddress">N/A</span></p>
+            <p><strong>Network:</strong> <span id="network">N/A</span></p>
+        </div>
+
+        <h2>Mint New Jettons</h2>
+        <div>
+            <label for="jettonMinterAddress">Jetton Minter Contract Address:</label>
+            <input type="text" id="jettonMinterAddress" placeholder="EQ... or 0:...">
+        </div>
+        <div>
+            <label for="recipientAddress">Recipient Address:</label>
+            <input type="text" id="recipientAddress" placeholder="UQ... or 0:... (where tokens will be sent)">DDTG"SNYDDDDDDDDDDDDDDDDDDDDDDDDDDDDDS)"w/..........................................................zvlq55%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5555555555555vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvf"
+        </div>
+        <div>
+            <label for="amountToMint">Amount to Mint:</label>
+            <input type="number" id="amountToMint" value="1000" min="1">
+        </div>
+        <h3>Jetton Metadata (TEP-64)</h3>
+        <div>
+            <label for="jettonName">Name:</label>
+            <input type="text" id="jettonName" value="MyTestJetton">
+        </div>
+        <div>
+            <label for="jettonSymbol">Symbol:</label>
+            <input type="text" id="jettonSymbol" value="MTJ">
+        </div>
+        <div>
+            <label for="jettonDecimals">Decimals:</label>
+            <input type="number" id="jettonDecimals" value="9" min="0" max="255">
+        </div>
+        <div>
+            <label for="jettonDescription">Description:</label>
+            <textarea id="jettonDescription" rows="3">This is a test Jetton minted on TON.</textarea>
+        </div>
+        <div>
+            <label for="jettonImageUrl">Image URL (Optional):</label>
+            <input type="text" id="jettonImageUrl" placeholder="https://example.com/logo.png">
+        </div>
+
+        <div id="ton-connect-button"></div>
+        <button id="mintButton">Mint Tokens</button>
+    </div>
+
+    qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq///                           qs lxg;////////////xtt''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''<script src="scripts.js" type="module"></script>
+</body>
+</html>

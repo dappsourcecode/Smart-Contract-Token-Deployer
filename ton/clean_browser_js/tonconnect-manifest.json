@@ -1,0 +1,8 @@
+{
+    "name": "My Token Deployer",
+    "description": "Deploy your own TON Jetton.",
+    "icons": [
+      "https://0fajarpurnama0.github.io/assets/images/icon/Logo-0FP0-square.png"
+    ],
+    "api_version": "2.0"
+  }

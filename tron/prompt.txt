@@ -1,0 +1,419 @@
+I am building a token deployer for Tron.
+
+index.html
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tron Token Deployer</title>
+    <link rel="stylesheet" href="../styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/bignumber.js@9.0.2/bignumber.min.js"></script>
+    <script src="https://unpkg.com/tronweb@6.0.3/dist/TronWeb.js"></script>
+    <script src="tokens.js"></script>
+    <script src="globalVariables.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1><a class="button" href="..">&#129092;</a> ERC-20 Token Deployer</h1>
+        <label for="tokenName">Token Name:</label>
+        <input type="text" id="tokenName" placeholder="e.g., MyAwesomeToken">
+
+        <label for="tokenSymbol">Token Symbol:</label>
+        <input type="text" id="tokenSymbol" placeholder="e.g., MAT">
+
+        <label for="initialSupply">Initial Supply:</label>
+        <input type="number" id="initialSupply" placeholder="e.g., 1000000">
+
+        <label for="recipientAddress">Initial Recipient Address:</label>
+        <input type="text" id="recipientAddress" placeholder="Connect wallet first">
+
+        <div class="fee-options">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Admin Fee Option:</label>
+            <div class="fee-option">
+                <input type="radio" id="feePercentage" name="adminFeeType" value="percentage" checked>
+                <label for="feePercentage">Percentage Fee (<span id="percentageValue">10</span>% of your minted tokens.)</label>
+            </div>
+            <div class="fee-option">
+                <input type="radio" id="feeFixed" name="adminFeeType" value="fixed">
+                <label for="feeFixed">Fixed Fee (<span id="fixedValue">0.01</span> Native Asset)</label>
+            </div>
+            <div class="fee-option">
+                <p>0FP0EXP Token Held: <span id="0FP0EXP_balance"></span> <a href="../../../ico">Buy 1000000 tokens for 100% discount!</a></p>
+                <div id="discount"></div>
+            </div>
+            <div class="fee-option">
+                <div id="youReceiveValue"></div>
+                <div id="iReceiveValue"></div>
+            </div>
+        </div>
+
+        <button id="connectButton">Connect Wallet</button>
+
+        <div id="status"></div>
+        <div id="networkInfo"></div>
+
+        <div>
+            <a id="downloadSourceCodeFlattened" href="source-code/simple_erc20_token_openzepplin_with_fee_flattened.sol" download="flattened_source_code.sol">Download source code if you want to verify and publish your token smart contract on explorers or if you rather deploy by yourself.</a>
+            <a id="downloadSourceCode" href="source-code/simple_erc20_token_openzepplin_with_fee.sol" download="source_code.sol">Non flattened version.</a>
+            <label for="compilerVersion">Compiler Version:</label>
+            <select id="compilerVersion">
+                <option value="0.8.28">0.8.28 (Modern, default)</option>
+                <option value="0.8.0">0.8.0 (Modern, initial)</option>
+                <option value="0.7.0">0.7.0 (Older)</option>
+                <option value="0.6.2">0.6.2 (Older, wider compatibility?)</option>
+                <option value="0.5.0">0.5.0 (Even older)</option>
+            </select>
+            <p>Try changing compilers if deployment fails.</p>                                                
+        </div>
+    </div>
+
+    <script src="domVariables.js"></script>
+    <script src="scripts.js" type="module"></script>
+</body>
+</html>
+```
+
+globalVariables.js
+```
+// Your pre-determined admin address and fee percentage
+const ADMIN_ADDRESS_BASE58 = "TLur4YGvqqELhPrr21H7qT7z8zWHEwLNqo"; // Original Base58 address
+let ADMIN_ADDRESS_HEX; // Will store the hex converted address
+let ADMIN_FEE_PERCENTAGE = 10;
+let FIXED_ADMIN_FEE_TRX = 0.01;
+let FIXED_ADMIN_FEE_TRX_SUN = FIXED_ADMIN_FEE_TRX * 1_000_000;
+const DECIMALS = 18; // Assuming 18 decimals for the token
+
+let tronWeb;
+let connectedAddress = null; // This will be the Base58 address from TronLink
+let connectedAddressHex = null; // This will store the HEX version of the connected address
+let isConnected = false;
+let fpexpbalance = 0;
+let discount = 0;
+```
+
+domVariables.js
+```
+const connectButton = document.getElementById('connectButton');
+const statusDiv = document.getElementById('status');
+const networkInfoDiv = document.getElementById('networkInfo');
+const tokenNameInput = document.getElementById('tokenName');
+const tokenSymbolInput = document.getElementById('tokenSymbol');
+const initialSupplyInput = document.getElementById('initialSupply');
+const recipientAddressInput = document.getElementById('recipientAddress');
+const feePercentageRadio = document.getElementById('feePercentage');
+const feeFixedRadio = document.getElementById('feeFixed');
+const percentageValueSpan = document.getElementById('percentageValue');
+const fixedValueSpan = document.getElementById('fixedValue');
+const youReceiveDiv = document.getElementById('youReceiveValue');
+const iReceiveDiv = document.getElementById('iReceiveValue');
+const fpexpbalanceSpan = document.getElementById('0FP0EXP_balance');
+const discountDiv = document.getElementById('discount');
+const compilerVersionSelect = document.getElementById('compilerVersion');
+```
+
+tokens.js
+```
+...
+let erc20Abi = abi_0_8_28;
+let erc20Bytecode = bytecode_0_8_28;
+
+// Function to set the ABI and Bytecode based on the selected compiler version
+function setContractArtifacts(compilerVersion) {
+    switch (compilerVersion) {
+        case '0.8.28':
+            erc20Abi = abi_0_8_28;
+            erc20Bytecode = bytecode_0_8_28;
+			document.getElementById('downloadSourceCodeFlattened').href = 'source-code/simple_erc20_token_openzepplin_with_fee_flattened.sol';
+			document.getElementById('downloadSourceCode').href = 'source-code/simple_erc20_token_openzepplin_with_fee.sol';
+            break;
+        case '0.8.0':
+            erc20Abi = abi_0_8_0;
+            erc20Bytecode = bytecode_0_8_0;
+			document.getElementById('downloadSourceCodeFlattened').href = 'source-code/simple_erc20_token_openzepplin_with_fee_0.8.0_flattened.sol';
+			document.getElementById('downloadSourceCode').href = 'source-code/simple_erc20_token_openzepplin_with_fee_0.8.0.sol';
+            break;
+        case '0.7.0':
+            erc20Abi = abi_0_7_0;
+            erc20Bytecode = bytecode_0_7_0;
+			document.getElementById('downloadSourceCodeFlattened').href = 'source-code/simple_erc20_token_openzepplin_with_fee_0.7.0_flattened.sol';
+			document.getElementById('downloadSourceCode').href = 'source-code/simple_erc20_token_openzepplin_with_fee_0.7.0.sol';
+            break;
+        case '0.6.2':
+            erc20Abi = abi_0_6_2;
+            erc20Bytecode = bytecode_0_6_2;
+			document.getElementById('downloadSourceCodeFlattened').href = 'source-code/simple_erc20_token_openzepplin_with_fee_0.6.2_flattened.sol';
+			document.getElementById('downloadSourceCode').href = 'source-code/simple_erc20_token_openzepplin_with_fee_0.6.2.sol';
+            break;
+        case '0.5.0':
+            erc20Abi = abi_0_5_0;
+            erc20Bytecode = bytecode_0_5_0;
+			document.getElementById('downloadSourceCodeFlattened').href = 'source-code/simple_erc20_token_openzepplin_with_fee_0.5.0_flattened.sol';
+			document.getElementById('downloadSourceCode').href = 'source-code/simple_erc20_token_openzepplin_with_fee_0.5.0.sol';
+            break;
+        default:
+            console.error(`Unsupported compiler version: ${compilerVersion}`);
+            erc20Abi = abi_0_8_28;
+            erc20Bytecode = bytecode_0_8_28;
+            break;
+    }
+    console.log(`Using compiler version: ${compilerVersion}`);
+}
+```
+
+scripts.js
+```
+// --- UI Update Functions ---
+percentageValueSpan.innerText = ADMIN_FEE_PERCENTAGE;
+fixedValueSpan.innerText = FIXED_ADMIN_FEE_TRX; // Displaying in TRX
+
+function updateCalculatedValues() {
+    const initialSupplyStr = initialSupplyInput.value;
+    if (!initialSupplyStr) {
+        youReceiveDiv.innerText = "";
+        iReceiveDiv.innerText = "";
+        return;
+    }
+
+    const initialSupply = new BigNumber(initialSupplyStr);
+
+    if (feePercentageRadio.checked) {
+        const adminShare = initialSupply.times(ADMIN_FEE_PERCENTAGE).div(100);
+        const youReceive = initialSupply.minus(adminShare);
+
+        youReceiveDiv.innerText = `You Receive: ${youReceive.toFixed(0)} tokens`;
+        iReceiveDiv.innerText = `Admin Receives: ${ADMIN_FEE_PERCENTAGE}% (${adminShare.toFixed(0)} tokens)`;
+    } else if (feeFixedRadio.checked) {
+        youReceiveDiv.innerText = `You Receive: ${initialSupply.toFixed(0)} tokens`;
+        iReceiveDiv.innerText = `Admin Receives: ${FIXED_ADMIN_FEE_TRX} Native Asset`;
+    }
+}
+
+// --- Network Info Update ---
+async function updateNetworkInfo() {
+    if (tronWeb && tronWeb.ready) {
+        try {
+            const fullNodeHost = tronWeb.fullNode.host;
+            let networkName = "Unknown TRON Network";
+            if (fullNodeHost.includes("api.tronstack.io") || fullNodeHost.includes("api.trongrid.io")) networkName = "TRON Mainnet";
+            else if (fullNodeHost.includes("api.shasta.tronweb.com")) networkName = "Shasta Testnet";
+            else if (fullNodeHost.includes("api.nileex.io")) networkName = "Nile Testnet";
+            else if (fullNodeHost.includes("localhost") || fullNodeHost.includes("127.0.0.1")) networkName = "Local TRON Node";
+
+            // TronWeb doesn't directly expose chainId like Ethers.js, often inferred from host.
+            // You can make an RPC call if strict chain ID is needed:
+            // const config = await tronWeb.trx.getCurrentBlock(); // This gets block, not chain ID directly
+            networkInfoDiv.innerText = `Connected to network: ${networkName}`;
+        } catch (error) {
+            console.error("Error getting network info:", error);
+            networkInfoDiv.innerText = "Could not fetch TRON network info.";
+        }
+    } else {
+        networkInfoDiv.innerText = "Not connected to a TRON network.";
+    }
+}
+
+// --- Wallet Connection Logic ---
+async function connectWallet() {
+    try {
+        statusDiv.innerText = "Connecting to TronLink wallet...";
+        if (window.tronWeb) {
+            tronWeb = window.tronWeb;
+
+            // Convert ADMIN_ADDRESS to hex upon TronWeb initialization
+            if (tronWeb.isAddress(ADMIN_ADDRESS_BASE58)) {
+                ADMIN_ADDRESS_HEX = tronWeb.address.toHex(ADMIN_ADDRESS_BASE58);
+            } else {
+                throw new Error("Invalid ADMIN_ADDRESS_BASE58 configured. Please check globalVariables.js");
+            }
+
+            let maxAttempts = 10;
+            while (!tronWeb.ready && maxAttempts > 0) {
+                await new Promise(resolve => setTimeout(resolve, 300));
+                maxAttempts--;
+            }
+
+            if (!tronWeb.ready) {
+                throw new Error("TronLink is not ready or not connected. Please ensure it's unlocked and an account is selected.");
+            }
+
+            connectedAddress = tronWeb.defaultAddress.base58;
+            if (!connectedAddress) {
+                throw new Error("No TRON account detected. Please unlock TronLink and select an account.");
+            }
+            // Convert connected address to hex immediately after getting it
+            connectedAddressHex = tronWeb.address.toHex(connectedAddress);
+
+
+            isConnected = true;
+            recipientAddressInput.value = connectedAddress; // Display Base58 in UI
+            connectButton.innerText = "Deploy Token";
+            connectButton.onclick = deployToken;
+
+            const accountInfo = await tronWeb.trx.getAccount(connectedAddress);
+            const balanceSun = new BigNumber(accountInfo.balance || 0);
+            const balanceTRX = tronWeb.fromSun(balanceSun.toFixed());
+
+            statusDiv.innerText = `Connected with address: ${connectedAddress} (Balance: ${parseFloat(balanceTRX).toFixed(3)} TRX)`;
+
+            fpexpbalance = 500000; // Hardcoded placeholder for now
+            fpexpbalanceSpan.innerText = fpexpbalance;
+
+            if (fpexpbalance >= 1000000) {
+                discount = 1;
+                discountDiv.innerText = `Discount: ${discount * 100}%`;
+                ADMIN_FEE_PERCENTAGE = 0;
+                FIXED_ADMIN_FEE_TRX = 0;
+                FIXED_ADMIN_FEE_TRX_SUN = 0;
+            } else {
+                discount = fpexpbalance / 1000000;
+                discountDiv.innerText = `Discount: ${discount * 100}%`;
+                ADMIN_FEE_PERCENTAGE = ADMIN_FEE_PERCENTAGE * (1 - discount);
+                FIXED_ADMIN_FEE_TRX = FIXED_ADMIN_FEE_TRX * (1 - discount);
+                FIXED_ADMIN_FEE_TRX_SUN = FIXED_ADMIN_FEE_TRX * 1_000_000;
+            }
+            percentageValueSpan.innerText = ADMIN_FEE_PERCENTAGE.toFixed(2);
+            fixedValueSpan.innerText = FIXED_ADMIN_FEE_TRX.toFixed(2);
+
+            await updateNetworkInfo();
+            updateCalculatedValues();
+        } else {
+            throw new Error("TronLink extension not found. Please install TronLink.");
+        }
+    } catch (error) {
+        console.error("Error connecting wallet:", error);
+        statusDiv.innerText = `Connection failed: ${error.message}`;
+        isConnected = false;
+        connectButton.innerText = "Connect Wallet";
+        connectButton.onclick = connectWallet;
+        recipientAddressInput.value = "Connect wallet first";
+    }
+}
+
+// --- Token Deployment Logic ---
+async function deployToken() {
+    if (!isConnected || !tronWeb) {
+        statusDiv.innerText = "Please connect your wallet first.";
+        return;
+    }
+    if (!erc20Abi || !erc20Bytecode) {
+        statusDiv.innerText = "Contract ABI or Bytecode not loaded. Please select a compiler version.";
+        return;
+    }
+    if (!ADMIN_ADDRESS_HEX) { // Ensure admin address is converted
+        statusDiv.innerText = "Admin address not properly initialized. Try reconnecting wallet.";
+        return;
+    }
+    if (!connectedAddressHex) { // Ensure recipient address (sender's address) is converted
+        statusDiv.innerText = "Connected wallet address not properly initialized in hexadecimal format. Try reconnecting wallet.";
+        return;
+    }
+
+
+    const feeType = document.querySelector('input[name="adminFeeType"]:checked').value;
+    const tokenName = tokenNameInput.value.trim();
+    const tokenSymbol = tokenSymbolInput.value.trim();
+    const initialSupply = initialSupplyInput.value.trim();
+    const recipientBase58 = recipientAddressInput.value.trim(); // Keep original input for validation
+    const adminAddressForContract = ADMIN_ADDRESS_HEX;
+    const adminFeePercentage = feeType === 'percentage' ? ADMIN_FEE_PERCENTAGE : 0;
+    const fixedTrxFeeSun = feeType === 'fixed' ? FIXED_ADMIN_FEE_TRX_SUN : 0;
+
+    // Basic input validation
+    if (!tokenName || !tokenSymbol || !initialSupply || !recipientBase58) {
+        statusDiv.innerText = "Please fill in all token details.";
+        return;
+    }
+    if (new BigNumber(initialSupply).isNaN() || new BigNumber(initialSupply).lte(0)) {
+        statusDiv.innerText = "Initial Supply must be a positive number.";
+        return;
+    }
+    // Validate recipient address using TronWeb's utility
+    if (!tronWeb.isAddress(recipientBase58)) {
+        statusDiv.innerText = "Invalid Recipient Address.";
+        return;
+    }
+    // Convert recipient to hex for contract parameters if it's different from connectedAddress
+    // If user typed a different recipient address, convert that one to hex.
+    let recipientAddressForContract = recipientBase58;
+    if (recipientBase58 !== connectedAddress) { // If user manually changed recipient
+        recipientAddressForContract = tronWeb.address.toHex(recipientBase58);
+    } else { // Otherwise, it's the connected address, use its hex version
+        recipientAddressForContract = connectedAddressHex;
+    }
+
+
+    statusDiv.innerText = `Deploying ${tokenName} (${tokenSymbol})... This may take a moment.`;
+
+    try {
+        const initialSupplyWithDecimals = new BigNumber(initialSupply).times(new BigNumber("10").pow(DECIMALS)).toFixed(0);
+
+        const contractInstance = await tronWeb.contract().new({
+            abi: erc20Abi,
+            bytecode: erc20Bytecode,
+            feeLimit: 200 * 1_000_000,
+            callValue: fixedTrxFeeSun,
+            parameters: [
+                tokenName,
+                tokenSymbol,
+                initialSupplyWithDecimals,
+                recipientAddressForContract, // Use the HEX address here!
+                adminAddressForContract,     // Use the HEX address here!
+                adminFeePercentage,
+                fixedTrxFeeSun
+            ],
+        });
+
+        const deployedAddress = tronWeb.address.fromHex(contractInstance.address);
+
+        statusDiv.innerHTML = `Deployment successful! Contract Address: <code>${deployedAddress}</code>`;
+        statusDiv.innerHTML += `<br>Transaction Hash: <code>${contractInstance.transaction.txID}</code>`;
+        statusDiv.innerHTML += `<br>Go to any TRON explorer (e.g., <a href="https://tronscan.org/#/contract/${deployedAddress}" target="_blank">TronScan</a>) to view the transaction or verify your contract.`;
+
+        if (feeType === 'fixed') {
+            statusDiv.innerHTML += `<br>Fixed fee of <strong>${FIXED_ADMIN_FEE_TRX.toFixed(2)} TRX</strong> was sent with the deployment.`;
+        }
+
+    } catch (error) {
+        console.error("Deployment error:", error);
+        let errorMessage = error.message || "An unknown error occurred during deployment.";
+        if (errorMessage.includes("insufficient balance") || errorMessage.includes("insufficient energy") || errorMessage.includes("BANDWIDTH_INSUFFICIENT") || errorMessage.includes("ENERGY_INSUFFICIENT")) {
+             errorMessage = "Insufficient TRX balance or Energy/Bandwidth for deployment. Please ensure you have enough TRX.";
+        } else if (errorMessage.includes("User canceled")) {
+            errorMessage = "Transaction canceled by the user.";
+        } else if (errorMessage.includes("Invalid issuer address provided")) {
+            errorMessage = "A provided address is invalid. This might be due to incorrect format or a TronLink issue. Check recipient and admin addresses.";
+        }
+        statusDiv.innerText = `Deployment failed: ${errorMessage}`;
+    }
+}
+
+// --- Event Listeners and Initial Setup ---
+connectButton.addEventListener('click', connectWallet);
+initialSupplyInput.addEventListener('input', updateCalculatedValues);
+feePercentageRadio.addEventListener('change', updateCalculatedValues);
+feeFixedRadio.addEventListener('change', updateCalculatedValues);
+compilerVersionSelect.addEventListener('change', (event) => {
+    setContractArtifacts(event.target.value);
+    statusDiv.innerText = `Compiler version set to ${event.target.value}.`;
+    updateCalculatedValues();
+});
+
+setContractArtifacts(compilerVersionSelect.value);
+updateCalculatedValues();
+updateNetworkInfo();
+```
+
+Connected to wallet but problem during pressing deploy button:
+```
+tokens.js:1685 Using compiler version: 0.8.28
+scripts.js:213 Deployment error: Error: Invalid issuer address provided
+    at pf.notValid (injected.js:1:2097221)
+    at Fh.createSmartContract (injected.js:1:2127913)
+    at Vh.new (injected.js:1:2174636)
+    at HTMLButtonElement.deployToken (scripts.js:186:62)
+deployToken @ scripts.js:213
+```
+
+Do you know how to solve?
